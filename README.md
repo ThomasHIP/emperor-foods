@@ -106,3 +106,15 @@ The timeout defaults can be overridden for a controlled canary with `SITES_INSTA
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
 - [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+
+## Cloudflare Pages
+
+Use these build settings for the free `emperor-foods.pages.dev` address:
+
+- Build command: `npm run build:pages`
+- Build output directory: `cloudflare-dist`
+- Root directory: `/`
+
+The Pages worker forwards requests to the verified production service so the
+ordering, voucher, and multilingual functionality remain available while the
+Cloudflare migration continues.
