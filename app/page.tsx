@@ -309,7 +309,12 @@ export default function Home() {
 
       <section className="faq-section" id="guide"><div className="faq-intro"><p className="section-label">MOONCAKE GUIDE</p><h2>{t.faqTitle}</h2><p>EMPEROR Privilege Voucher · HERO PAY · Corporate Gifts · Mid-Autumn 2026</p></div><div className="faq-list">{faq[language].map((item) => <details key={item.q}><summary>{item.q}<span>＋</span></summary><p>{item.a}</p></details>)}</div></section>
 
-      <section className="payment-strip"><div><span>SECURE PAYMENT BY</span><strong>HERO PAY</strong></div><p>PromptPay · Dynamic Thai QR · Visa · Mastercard · Alipay · WeChat Pay · Payment Link</p></section>
+      <section className="payment-strip" aria-label="HERO PAY payment partner">
+        <a className="payment-link" href="https://heropay.co.th/" target="_blank" rel="noopener noreferrer">
+          <span className="payment-logo-card"><Image src="/brand/hero-pay.jpg" alt="HERO PAY — Power Every Payment" width={1536} height={487} /></span>
+          <span className="payment-copy"><b>SECURE PAYMENT BY HERO PAY</b><span>PromptPay · Dynamic Thai QR · Visa · Mastercard · Alipay · WeChat Pay · Payment Link</span><strong>Visit HERO PAY ↗</strong></span>
+        </a>
+      </section>
       <footer><div className="footer-brand"><CrownMark /><strong>EMPEROR</strong><span>FOODS</span></div><p>{t.footerLine}</p><nav><a href="#story">{t.story}</a><a href="#collection">{t.collection}</a><a href="#corporate">{t.corporate}</a><a href="#guide">FAQ</a></nav><small>© 2026 EMPEROR FOODS. All rights reserved.</small></footer>
 
       <aside className={cartOpen ? "cart-drawer open" : "cart-drawer"} aria-hidden={!cartOpen}>
