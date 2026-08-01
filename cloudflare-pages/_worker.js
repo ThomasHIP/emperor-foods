@@ -1,3 +1,4 @@
+// Cloudflare Pages reverse proxy entry point.
 const UPSTREAM_ORIGIN = "https://emperor-foods.vatisp.chatgpt.site";
 
 function rewriteLocation(value, publicOrigin) {
