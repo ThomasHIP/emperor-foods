@@ -7,7 +7,7 @@ const CUSTOMER_SHELL = `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>EMPEROR FOODS | Emperor Duck เป็ดจักรพรรดิ</title>
-  <meta name="description" content="EMPEROR FOODS — Emperor Duck sugarcane-smoked duck and meats. Temperature-controlled delivery nationwide ฿120 per order, no minimum.">
+  <meta name="description" content="EMPEROR FOODS — Emperor Duck sugarcane-smoked duck and meats. Temperature-controlled delivery nationwide ฿120 per order, no minimum. HERO Insure PRB benefit ฿200.">
   <meta name="theme-color" content="#f8f0df">
   <style>
     :root{--cream:#f8f0df;--wine:#6b1020;--wine-deep:#310611;--gold:#c99b32;--gold-light:#ead49a;--ink:#2c1820}
@@ -42,8 +42,10 @@ const CUSTOMER_SHELL = `<!doctype html>
     .menu-head small{display:block;color:#8d6d4d;font-weight:700;letter-spacing:.08em;margin-bottom:4px}
     .menu-head h2{margin:0;color:var(--wine-deep);font:700 27px/1.05 Georgia,"Times New Roman",serif}
     .close-menu{border:1px solid #e2d3bb;background:#fff;color:var(--wine);border-radius:50%;width:38px;height:38px;font-size:22px;cursor:pointer}
-    .delivery-card{margin:16px 0 18px;padding:14px 15px;border:1px solid #dfbd66;border-radius:14px;background:linear-gradient(135deg,#fff3c9,#fff9e8);color:#5d3207;line-height:1.45}
+    .delivery-card{margin:16px 0 10px;padding:14px 15px;border:1px solid #dfbd66;border-radius:14px;background:linear-gradient(135deg,#fff3c9,#fff9e8);color:#5d3207;line-height:1.45}
     .delivery-card b{font-size:20px;color:#851426}
+    .benefit-card{margin:0 0 18px;padding:14px 15px;border:1px solid #f0b3c1;border-radius:14px;background:linear-gradient(135deg,#fff0f5,#f3f7ff);color:#4d2130;line-height:1.45}
+    .benefit-card b{font-size:20px;color:#b10d3a}
     .menu-list{display:grid;gap:0;border-top:1px solid #eadcc5}
     .menu-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start;padding:13px 2px;border-bottom:1px solid #eadcc5}
     .menu-row b{color:#3d1720;font-size:15px}
@@ -64,7 +66,7 @@ const CUSTOMER_SHELL = `<!doctype html>
 <body>
   <iframe id="emperor-app" class="app-frame" title="EMPEROR FOODS online ordering" src="${APP_ORIGIN}/" allow="payment *; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 
-  <button id="menu-toggle" class="menu-toggle" type="button" aria-controls="current-menu" aria-expanded="false">เมนูล่าสุด · ส่ง <strong>฿120</strong></button>
+  <button id="menu-toggle" class="menu-toggle" type="button" aria-controls="current-menu" aria-expanded="false">เมนูล่าสุด · ส่ง <strong>฿120</strong> · สิทธิ์ <strong>฿200</strong></button>
   <div id="menu-backdrop" class="menu-backdrop" aria-hidden="true"></div>
   <aside id="current-menu" class="menu-drawer" aria-label="Emperor Duck current menu" aria-hidden="true">
     <div class="menu-head">
@@ -72,6 +74,7 @@ const CUSTOMER_SHELL = `<!doctype html>
       <button id="close-menu" class="close-menu" type="button" aria-label="Close menu">×</button>
     </div>
     <div class="delivery-card">จัดส่งควบคุมอุณหภูมิทั่วไทย <b>120 บาท / คำสั่งซื้อ</b><br>ไม่มีขั้นต่ำ · ใกล้ไกลราคาเดียว</div>
+    <div class="benefit-card"><strong>HERO Insure</strong><br>รับสิทธิ์ส่วนลด พ.ร.บ. <b>200 บาท</b><br>สิทธิ์นี้แยกจากค่าจัดส่ง 120 บาท</div>
     <div class="menu-list">
       <div class="menu-row"><div><b>เป็ดรมควัน อบชานอ้อย</b><small>Whole Smoked Duck</small></div><div class="menu-price">฿790</div></div>
       <div class="menu-row"><div><b>อกเป็ดรมควัน</b><small>Smoked Duck Breast · 1 ชิ้น</small></div><div class="menu-price">฿169</div></div>
@@ -82,7 +85,7 @@ const CUSTOMER_SHELL = `<!doctype html>
       <div class="menu-row"><div><b>ลิ้นหมูรมควัน</b><small>Smoked Pig’s Tongue · ประมาณ 330 กรัม</small></div><div class="menu-price">฿490</div></div>
       <div class="menu-row"><div><b>ชุดสามกษัตริย์</b><small>อกเป็ดรมควัน 1 + หมูรมควัน 1 + สามชั้นรมควัน 1 · ประมาณ 500 กรัม</small></div><div class="menu-price">฿490</div></div>
     </div>
-    <p class="menu-note">ข้อมูลราคานี้เป็นข้อมูลล่าสุดสำหรับหน้าเว็บไซต์ Emperor Duck. งานโฆษณาเก่าที่ระบุค่าจัดส่ง 200/250 บาทถือเป็นข้อมูลเดิมและไม่ใช้เป็นราคาปัจจุบัน.</p>
+    <p class="menu-note">ข้อมูลล่าสุด: ค่าจัดส่งควบคุมอุณหภูมิทั่วไทย 120 บาทต่อคำสั่งซื้อ ไม่มีขั้นต่ำ. สิทธิ์ HERO Insure คือส่วนลด พ.ร.บ. 200 บาท. งานโฆษณาเก่าที่ระบุค่าจัดส่ง 200/250 บาทเป็นข้อมูลเดิม.</p>
   </aside>
 
   <section id="emperor-intro" class="intro" aria-label="EMPEROR FOODS introduction" aria-live="polite">
