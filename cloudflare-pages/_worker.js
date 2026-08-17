@@ -1,6 +1,56 @@
 // Cloudflare Pages customer shell for EMPEROR FOODS.
 const APP_ORIGIN = "https://emperor-foods.vatisp.chatgpt.site";
 
+const STORE_PATCH = `<script>
+(() => {
+  const clean = (value) => (value || "").replace(/\\s+/g, " ").trim();
+
+  function patchWholeDuckPrices() {
+    const leaves = [...document.querySelectorAll("body *")].filter((el) => el.children.length === 0);
+    const price790 = leaves.find((el) => /^(฿|บาท\\s*)?790(\\s*บาท)?$/.test(clean(el.textContent)));
+    if (!price790) return;
+
+    let card = price790;
+    for (let i = 0; i < 8 && card; i++, card = card.parentElement) {
+      const text = clean(card.textContent);
+      if (text.includes("790") && text.includes("890") && text.includes("990") && text.length < 1800) break;
+    }
+    if (!card || card === document.body || card.dataset.singleDuckPrice === "1") return;
+    card.dataset.singleDuckPrice = "1";
+
+    const rows = [...card.querySelectorAll("*")];
+    for (const el of rows) {
+      const text = clean(el.textContent);
+      if (!text || text.length > 220) continue;
+      if (/890|990/.test(text)) {
+        let row = el;
+        for (let i = 0; i < 4 && row.parentElement && clean(row.parentElement.textContent).length < 260; i++) {
+          const parentText = clean(row.parentElement.textContent);
+          if ((parentText.includes("890") || parentText.includes("990")) && !parentText.includes("790")) row = row.parentElement;
+          else break;
+        }
+        row.style.display = "none";
+      }
+    }
+
+    for (const el of [...card.querySelectorAll("*")]) {
+      if (el.children.length) continue;
+      const text = clean(el.textContent);
+      if (/ขนาดเล็ก|ขนาดกลาง|ขนาดใหญ่|ประมาณ\\s*1\\.[123]|Small|Medium|Large|1\\.[123]\\s*(kg|กก)/i.test(text)) {
+        el.style.display = "none";
+      }
+    }
+  }
+
+  let timer;
+  const run = () => { clearTimeout(timer); timer = setTimeout(patchWholeDuckPrices, 80); };
+  new MutationObserver(run).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+  patchWholeDuckPrices();
+  setTimeout(patchWholeDuckPrices, 400);
+  setTimeout(patchWholeDuckPrices, 1200);
+})();
+<\/script>`;
+
 const CUSTOMER_SHELL = `<!doctype html>
 <html lang="th">
 <head>
@@ -21,13 +71,13 @@ const CUSTOMER_SHELL = `<!doctype html>
 .menu-list{display:grid;border-top:1px solid #eadcc5}.menu-row{display:grid;grid-template-columns:1fr auto;gap:14px;padding:13px 2px;border-bottom:1px solid #eadcc5}.menu-row b{font-size:15px}.menu-row small{display:block;margin-top:3px;color:#816f67;line-height:1.4}.menu-price{color:#8a1023;font:700 20px/1 Georgia,serif;white-space:nowrap}.menu-note{margin-top:16px;color:#76625b;font-size:12px;line-height:1.55}
 .intro{position:fixed;z-index:30;inset:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 44%,rgba(234,212,154,.28),transparent 30%),linear-gradient(145deg,#fffaf0 0%,#f8f0df 52%,#f2e5cc 100%);color:var(--wine);transition:opacity .85s ease,visibility .85s ease}.intro::after{content:"";position:absolute;left:-35%;top:0;width:28%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-18deg);animation:lightSweep 2.7s .35s cubic-bezier(.22,.7,.24,1) both}.intro.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
 .intro-lockup{position:relative;width:min(78vw,560px);display:grid;place-items:center;text-align:center}.crown{margin-bottom:18px;color:var(--gold);font:400 clamp(37px,8vw,61px)/1 Georgia,serif;opacity:0;transform:translateY(-18px) scale(.82);animation:crownIn .85s .15s cubic-bezier(.2,.8,.2,1.2) forwards}.word-emperor{margin:0;color:var(--wine-deep);font:400 clamp(33px,8.8vw,73px)/1 Georgia,serif;letter-spacing:.2em;text-indent:.2em;opacity:0;filter:blur(7px);transform:scale(.96);animation:wordIn 1s .58s ease forwards}.word-foods{margin:14px 0 0;color:var(--wine);font-weight:700;font-size:clamp(11px,2.8vw,17px);letter-spacing:.72em;text-indent:.72em;opacity:0;transform:translateY(9px);animation:foodsIn .75s 1.05s ease forwards}.rule{width:min(64vw,390px);height:1px;margin-top:28px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);animation:ruleIn .85s 1.18s ease forwards}.tagline{margin:17px 0 0;color:#816e5f;font-size:clamp(8px,2vw,11px);font-weight:600;letter-spacing:.22em;text-transform:uppercase;opacity:0;animation:foodsIn .7s 1.45s ease forwards}
-.fallback{position:fixed;z-index:31;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);color:var(--wine);font-size:11px;opacity:0;transition:.3s}.fallback.is-visible{opacity:.72}
+.fallback{position:fixed;z-index:31;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);color:var(--wine);font-size:11px;opacity:0;transition:.3s}
 @keyframes crownIn{to{opacity:1;transform:none}}@keyframes wordIn{to{opacity:1;filter:blur(0);transform:none}}@keyframes foodsIn{to{opacity:1;transform:none}}@keyframes ruleIn{to{transform:scaleX(1)}}@keyframes lightSweep{0%{transform:translateX(0) skewX(-18deg);opacity:0}18%{opacity:.55}100%{transform:translateX(620%) skewX(-18deg);opacity:0}}
 @media(max-width:600px){.menu-toggle{font-size:13px;padding:9px 14px}.menu-toggle strong{font-size:15px}}@media(prefers-reduced-motion:reduce){.intro::after{display:none}}
 </style>
 </head>
 <body>
-<iframe id="emperor-app" class="app-frame" title="EMPEROR FOODS online ordering" src="${APP_ORIGIN}/" allow="payment *; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<iframe id="emperor-app" class="app-frame" title="EMPEROR FOODS online ordering" src="/store/" allow="payment *; clipboard-write"></iframe>
 <button id="menu-toggle" class="menu-toggle" type="button" aria-controls="current-menu" aria-expanded="false"><span>ค่าส่งแช่เย็น ทั่วไทย 200 บาท</span><strong>รับ 200 เครดิต</strong></button>
 <div id="menu-backdrop" class="menu-backdrop" aria-hidden="true"></div>
 <aside id="current-menu" class="menu-drawer" aria-label="Emperor Duck current menu" aria-hidden="true">
@@ -46,10 +96,20 @@ const CUSTOMER_SHELL = `<!doctype html>
 </div><p class="menu-note">ค่าส่งแช่เย็น ทั่วไทย 200 บาท · รับ 200 เครดิต</p></aside>
 <section id="emperor-intro" class="intro" aria-label="EMPEROR FOODS introduction"><div class="intro-lockup"><div class="crown" aria-hidden="true">♛</div><h1 class="word-emperor">EMPEROR</h1><p class="word-foods">FOODS</p><div class="rule"></div><p class="tagline">Premium Asian Lifestyle</p></div></section>
 <a id="fallback" class="fallback" href="${APP_ORIGIN}/">Open EMPEROR FOODS</a>
-<script>(()=>{const frame=document.getElementById("emperor-app"),intro=document.getElementById("emperor-intro"),fallback=document.getElementById("fallback"),toggle=document.getElementById("menu-toggle"),drawer=document.getElementById("current-menu"),backdrop=document.getElementById("menu-backdrop"),close=document.getElementById("close-menu"),startedAt=performance.now(),reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches,minimumIntro=reduceMotion?450:2800;let revealed=false;const revealApp=()=>{if(revealed)return;revealed=true;frame.classList.add("is-ready");intro.classList.add("is-leaving");setTimeout(()=>intro.remove(),reduceMotion?350:950)};const setMenu=open=>{drawer.classList.toggle("is-open",open);backdrop.classList.toggle("is-open",open);drawer.setAttribute("aria-hidden",String(!open));backdrop.setAttribute("aria-hidden",String(!open));toggle.setAttribute("aria-expanded",String(open))};toggle.addEventListener("click",()=>setMenu(!drawer.classList.contains("is-open")));close.addEventListener("click",()=>setMenu(false));backdrop.addEventListener("click",()=>setMenu(false));document.addEventListener("keydown",e=>{if(e.key==="Escape")setMenu(false)});frame.addEventListener("load",()=>{const remaining=Math.max(0,minimumIntro-(performance.now()-startedAt));setTimeout(revealApp,remaining)},{once:true});setTimeout(()=>fallback.classList.add("is-visible"),6500)})();</script>
+<script>(()=>{const frame=document.getElementById("emperor-app"),intro=document.getElementById("emperor-intro"),toggle=document.getElementById("menu-toggle"),drawer=document.getElementById("current-menu"),backdrop=document.getElementById("menu-backdrop"),close=document.getElementById("close-menu"),startedAt=performance.now(),reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches,minimumIntro=reduceMotion?450:2800;let revealed=false;const revealApp=()=>{if(revealed)return;revealed=true;frame.classList.add("is-ready");intro.classList.add("is-leaving");setTimeout(()=>intro.remove(),reduceMotion?350:950)};const setMenu=open=>{drawer.classList.toggle("is-open",open);backdrop.classList.toggle("is-open",open);drawer.setAttribute("aria-hidden",String(!open));backdrop.setAttribute("aria-hidden",String(!open));toggle.setAttribute("aria-expanded",String(open))};toggle.addEventListener("click",()=>setMenu(!drawer.classList.contains("is-open")));close.addEventListener("click",()=>setMenu(false));backdrop.addEventListener("click",()=>setMenu(false));document.addEventListener("keydown",e=>{if(e.key==="Escape")setMenu(false)});frame.addEventListener("load",()=>{const remaining=Math.max(0,minimumIntro-(performance.now()-startedAt));setTimeout(revealApp,remaining)},{once:true});setTimeout(revealApp,6000)})();</script>
 </body></html>`;
 
-function rewriteLocation(value, publicOrigin) { if (!value) return value; return value.replace(APP_ORIGIN, publicOrigin); }
+function rewriteLocation(value, publicOrigin) {
+  if (!value) return value;
+  return value.replace(APP_ORIGIN, publicOrigin);
+}
+
+function upstreamUrlFor(publicUrl) {
+  let path = publicUrl.pathname;
+  if (path === "/store" || path === "/store/") path = "/";
+  else if (path.startsWith("/store/")) path = path.slice(6) || "/";
+  return new URL(path + publicUrl.search, APP_ORIGIN);
+}
 
 export default {
   async fetch(request) {
@@ -61,13 +121,13 @@ export default {
         headers: {
           "content-type": "text/html; charset=utf-8",
           "cache-control": "no-store",
-          "content-security-policy": `frame-src ${APP_ORIGIN}; default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'`,
+          "content-security-policy": `frame-src 'self' ${APP_ORIGIN}; default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'`,
           "x-content-type-options": "nosniff"
         }
       });
     }
 
-    const upstreamUrl = new URL(publicUrl.pathname + publicUrl.search, APP_ORIGIN);
+    const upstreamUrl = upstreamUrlFor(publicUrl);
     const headers = new Headers(request.headers);
     headers.delete("host");
     headers.set("x-forwarded-host", publicUrl.host);
@@ -78,9 +138,23 @@ export default {
       body: request.method === "GET" || request.method === "HEAD" ? undefined : request.body,
       redirect: "manual"
     }));
+
     const responseHeaders = new Headers(upstreamResponse.headers);
     const location = responseHeaders.get("location");
     if (location) responseHeaders.set("location", rewriteLocation(location, publicUrl.origin));
+
+    const contentType = responseHeaders.get("content-type") || "";
+    if (request.method === "GET" && (publicUrl.pathname === "/store" || publicUrl.pathname.startsWith("/store/")) && contentType.includes("text/html")) {
+      let html = await upstreamResponse.text();
+      html = html.includes("</body>") ? html.replace("</body>", STORE_PATCH + "</body>") : html + STORE_PATCH;
+      responseHeaders.delete("content-length");
+      responseHeaders.delete("content-encoding");
+      responseHeaders.delete("content-security-policy");
+      responseHeaders.delete("x-frame-options");
+      responseHeaders.set("cache-control", "no-store");
+      return new Response(html, { status: upstreamResponse.status, statusText: upstreamResponse.statusText, headers: responseHeaders });
+    }
+
     return new Response(upstreamResponse.body, {
       status: upstreamResponse.status,
       statusText: upstreamResponse.statusText,
