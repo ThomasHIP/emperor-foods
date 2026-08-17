@@ -1,7 +1,5 @@
 // Cloudflare Pages customer shell for EMPEROR FOODS.
 const APP_ORIGIN = "https://emperor-foods.vatisp.chatgpt.site";
-const DUCK_LOGO_SOURCE = "https://raw.githubusercontent.com/ThomasHIP/emperor-foods/main/cloudflare-pages/emperor-duck-logo.svg";
-const DUCK_LOGO = "/emperor-duck-logo.svg";
 
 const CUSTOMER_SHELL = `<!doctype html>
 <html lang="th">
@@ -12,11 +10,9 @@ const CUSTOMER_SHELL = `<!doctype html>
 <meta name="description" content="EMPEROR DUCK — ค่าส่งแช่เย็น ทั่วไทย 200 บาท รับ 200 เครดิต">
 <meta name="theme-color" content="#f8f0df">
 <style>
-:root{--cream:#f8f0df;--wine:#6b1020;--wine-deep:#310611;--gold:#c99b32;--ink:#2c1820;--header-h:132px}
+:root{--cream:#f8f0df;--wine:#6b1020;--wine-deep:#310611;--gold:#c99b32;--ink:#2c1820}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:var(--cream);overflow:hidden}body{font-family:Arial,Helvetica,"Noto Sans Thai",sans-serif}
-.app-frame{position:fixed;left:0;right:0;bottom:0;top:var(--header-h);width:100%;height:calc(100dvh - var(--header-h));border:0;background:var(--cream);opacity:0;transform:scale(1.006);transition:opacity .7s ease,transform 1s ease}.app-frame.is-ready{opacity:1;transform:none}
-.duck-header{position:fixed;z-index:20;top:0;left:0;right:0;height:var(--header-h);display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 40%,#fffdf7 0%,#fbf4e7 58%,#f2e5cd 100%);border-bottom:1px solid rgba(201,155,50,.28);box-shadow:0 8px 28px rgba(65,20,20,.06)}
-.duck-logo{display:block;width:min(88vw,430px);height:118px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(67,20,20,.08));animation:duckFloat 5s ease-in-out infinite;transform-origin:center}
+.app-frame{position:fixed;inset:0;width:100%;height:100dvh;border:0;background:var(--cream);opacity:0;transform:scale(1.006);transition:opacity .7s ease,transform 1s ease}.app-frame.is-ready{opacity:1;transform:none}
 .menu-toggle{position:fixed;z-index:22;right:12px;bottom:max(12px,env(safe-area-inset-bottom));max-width:calc(100vw - 24px);border:1px solid rgba(255,255,255,.34);border-radius:22px;padding:10px 16px;background:linear-gradient(135deg,#5c0617,#8b1830);color:#fff8e9;box-shadow:0 10px 30px rgba(35,0,9,.28);font-weight:800;font-size:14px;line-height:1.35;text-align:center;cursor:pointer}.menu-toggle strong{display:block;color:#f3cf77;font-size:16px}
 .menu-backdrop{position:fixed;z-index:23;inset:0;background:rgba(18,3,8,.52);opacity:0;visibility:hidden;transition:.25s ease}.menu-backdrop.is-open{opacity:1;visibility:visible}
 .menu-drawer{position:fixed;z-index:24;top:0;right:0;width:min(92vw,430px);height:100dvh;background:#fffaf0;color:var(--ink);box-shadow:-22px 0 60px rgba(31,0,9,.3);transform:translateX(103%);transition:transform .32s cubic-bezier(.2,.8,.2,1);overflow:auto;padding:22px 20px calc(34px + env(safe-area-inset-bottom))}.menu-drawer.is-open{transform:none}
@@ -26,12 +22,11 @@ const CUSTOMER_SHELL = `<!doctype html>
 .intro{position:fixed;z-index:30;inset:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 44%,rgba(234,212,154,.28),transparent 30%),linear-gradient(145deg,#fffaf0 0%,#f8f0df 52%,#f2e5cc 100%);color:var(--wine);transition:opacity .85s ease,visibility .85s ease}.intro::after{content:"";position:absolute;left:-35%;top:0;width:28%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-18deg);animation:lightSweep 2.7s .35s cubic-bezier(.22,.7,.24,1) both}.intro.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
 .intro-lockup{position:relative;width:min(78vw,560px);display:grid;place-items:center;text-align:center}.crown{margin-bottom:18px;color:var(--gold);font:400 clamp(37px,8vw,61px)/1 Georgia,serif;opacity:0;transform:translateY(-18px) scale(.82);animation:crownIn .85s .15s cubic-bezier(.2,.8,.2,1.2) forwards}.word-emperor{margin:0;color:var(--wine-deep);font:400 clamp(33px,8.8vw,73px)/1 Georgia,serif;letter-spacing:.2em;text-indent:.2em;opacity:0;filter:blur(7px);transform:scale(.96);animation:wordIn 1s .58s ease forwards}.word-foods{margin:14px 0 0;color:var(--wine);font-weight:700;font-size:clamp(11px,2.8vw,17px);letter-spacing:.72em;text-indent:.72em;opacity:0;transform:translateY(9px);animation:foodsIn .75s 1.05s ease forwards}.rule{width:min(64vw,390px);height:1px;margin-top:28px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);animation:ruleIn .85s 1.18s ease forwards}.tagline{margin:17px 0 0;color:#816e5f;font-size:clamp(8px,2vw,11px);font-weight:600;letter-spacing:.22em;text-transform:uppercase;opacity:0;animation:foodsIn .7s 1.45s ease forwards}
 .fallback{position:fixed;z-index:31;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);color:var(--wine);font-size:11px;opacity:0;transition:.3s}.fallback.is-visible{opacity:.72}
-@keyframes duckFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.008)}}@keyframes crownIn{to{opacity:1;transform:none}}@keyframes wordIn{to{opacity:1;filter:blur(0);transform:none}}@keyframes foodsIn{to{opacity:1;transform:none}}@keyframes ruleIn{to{transform:scaleX(1)}}@keyframes lightSweep{0%{transform:translateX(0) skewX(-18deg);opacity:0}18%{opacity:.55}100%{transform:translateX(620%) skewX(-18deg);opacity:0}}
-@media(max-width:600px){:root{--header-h:112px}.duck-logo{width:min(92vw,360px);height:100px}.menu-toggle{font-size:13px;padding:9px 14px}.menu-toggle strong{font-size:15px}}@media(prefers-reduced-motion:reduce){.intro::after{display:none}.duck-logo{animation:none}}
+@keyframes crownIn{to{opacity:1;transform:none}}@keyframes wordIn{to{opacity:1;filter:blur(0);transform:none}}@keyframes foodsIn{to{opacity:1;transform:none}}@keyframes ruleIn{to{transform:scaleX(1)}}@keyframes lightSweep{0%{transform:translateX(0) skewX(-18deg);opacity:0}18%{opacity:.55}100%{transform:translateX(620%) skewX(-18deg);opacity:0}}
+@media(max-width:600px){.menu-toggle{font-size:13px;padding:9px 14px}.menu-toggle strong{font-size:15px}}@media(prefers-reduced-motion:reduce){.intro::after{display:none}}
 </style>
 </head>
 <body>
-<header class="duck-header" aria-label="Emperor Duck"><img class="duck-logo" src="${DUCK_LOGO}" alt="Emperor Duck เป็ดจักรพรรดิ"></header>
 <iframe id="emperor-app" class="app-frame" title="EMPEROR FOODS online ordering" src="${APP_ORIGIN}/" allow="payment *; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 <button id="menu-toggle" class="menu-toggle" type="button" aria-controls="current-menu" aria-expanded="false"><span>ค่าส่งแช่เย็น ทั่วไทย 200 บาท</span><strong>รับ 200 เครดิต</strong></button>
 <div id="menu-backdrop" class="menu-backdrop" aria-hidden="true"></div>
@@ -61,24 +56,12 @@ export default {
     const publicUrl = new URL(request.url);
     const acceptsHtml = (request.headers.get("accept") || "").includes("text/html");
 
-    if (request.method === "GET" && publicUrl.pathname === "/emperor-duck-logo.svg") {
-      const logoResponse = await fetch(DUCK_LOGO_SOURCE, { headers: { accept: "image/svg+xml,image/*;q=0.9,*/*;q=0.8" } });
-      return new Response(logoResponse.body, {
-        status: logoResponse.status,
-        headers: {
-          "content-type": "image/svg+xml; charset=utf-8",
-          "cache-control": "public, max-age=300",
-          "x-content-type-options": "nosniff"
-        }
-      });
-    }
-
     if (request.method === "GET" && publicUrl.pathname === "/" && acceptsHtml) {
       return new Response(CUSTOMER_SHELL, {
         headers: {
           "content-type": "text/html; charset=utf-8",
           "cache-control": "no-store",
-          "content-security-policy": `frame-src ${APP_ORIGIN}; default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'`,
+          "content-security-policy": `frame-src ${APP_ORIGIN}; default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'`,
           "x-content-type-options": "nosniff"
         }
       });
