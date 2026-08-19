@@ -1,53 +1,148 @@
 // Cloudflare Pages customer shell for EMPEROR FOODS.
 const APP_ORIGIN = "https://emperor-foods.vatisp.chatgpt.site";
 
+// This script is injected into the same-origin /store/ proxy so we can safely
+// correct the legacy storefront without changing the original hosted site.
 const STORE_PATCH = `<script>
 (() => {
   const clean = (value) => (value || "").replace(/\\s+/g, " ").trim();
+  const wholeDuckText = /เป็ดรมควัน|Whole\\s+(Sugarcane-)?Smoked\\s+Duck|Whole.*Duck|甘蔗烟熏整鸭/i;
+  const otherProductText = /อกเป็ดรมควัน|น่องสะโพก|หมูรมควัน|ลิ้นหมู|สามกษัตริย์|Smoked Duck Breast|Smoked Duck Thigh|Smoked Pork|Pig.?s Tongue/i;
+  const sizeText = /ขนาดเล็ก|ขนาดกลาง|ขนาดใหญ่|Small|Medium|Large|ประมาณ\\s*1\\.[123]|1\\.[123]\\s*(kg|กก)/i;
 
-  function patchWholeDuckPrices() {
-    const leaves = [...document.querySelectorAll("body *")].filter((el) => el.children.length === 0);
-    const price790 = leaves.find((el) => /^(฿|บาท\\s*)?790(\\s*บาท)?$/.test(clean(el.textContent)));
-    if (!price790) return;
+  function leaves(root = document.body) {
+    return [...root.querySelectorAll("*")].filter((el) => el.children.length === 0);
+  }
 
-    let card = price790;
-    for (let i = 0; i < 8 && card; i++, card = card.parentElement) {
-      const text = clean(card.textContent);
-      if (text.includes("790") && text.includes("890") && text.includes("990") && text.length < 1800) break;
-    }
-    if (!card || card === document.body || card.dataset.singleDuckPrice === "1") return;
-    card.dataset.singleDuckPrice = "1";
+  function exactPrice(el, value) {
+    return new RegExp("^(?:฿|บาท\\\\s*)?" + value + "(?:\\\\s*บาท)?$").test(clean(el.textContent));
+  }
 
-    const rows = [...card.querySelectorAll("*")];
-    for (const el of rows) {
-      const text = clean(el.textContent);
-      if (!text || text.length > 220) continue;
-      if (/890|990/.test(text)) {
-        let row = el;
-        for (let i = 0; i < 4 && row.parentElement && clean(row.parentElement.textContent).length < 260; i++) {
-          const parentText = clean(row.parentElement.textContent);
-          if ((parentText.includes("890") || parentText.includes("990")) && !parentText.includes("790")) row = row.parentElement;
-          else break;
-        }
-        row.style.display = "none";
+  function findWholeDuckCard(priceEl, price) {
+    let node = priceEl;
+    let candidate = null;
+    for (let i = 0; i < 10 && node && node !== document.body; i++, node = node.parentElement) {
+      const text = clean(node.textContent);
+      if (otherProductText.test(text)) break;
+      if (text.includes(String(price)) && wholeDuckText.test(text)) {
+        candidate = node;
+        if (node.querySelector("img,picture") && sizeText.test(text)) break;
       }
+      if (text.length > 1800) break;
     }
+    return candidate;
+  }
 
-    for (const el of [...card.querySelectorAll("*")]) {
-      if (el.children.length) continue;
-      const text = clean(el.textContent);
-      if (/ขนาดเล็ก|ขนาดกลาง|ขนาดใหญ่|ประมาณ\\s*1\\.[123]|Small|Medium|Large|1\\.[123]\\s*(kg|กก)/i.test(text)) {
-        el.style.display = "none";
+  function hideExtraDuckCards() {
+    const all = leaves();
+    for (const price of [890, 990]) {
+      for (const priceEl of all.filter((el) => exactPrice(el, price))) {
+        const card = findWholeDuckCard(priceEl, price);
+        if (card && card !== document.body) {
+          card.style.setProperty("display", "none", "important");
+          card.setAttribute("aria-hidden", "true");
+          card.dataset.emperorHiddenDuckSize = String(price);
+        }
       }
     }
   }
 
+  function normalize790Card() {
+    const all = leaves();
+    for (const priceEl of all.filter((el) => exactPrice(el, 790))) {
+      const card = findWholeDuckCard(priceEl, 790);
+      if (!card || card === document.body) continue;
+
+      for (const el of leaves(card)) {
+        const text = clean(el.textContent);
+        if (!text) continue;
+
+        if (/^เป็ดรมควัน(?:อบ)?ชานอ้อย.*ขนาด(เล็ก|กลาง|ใหญ่)$/i.test(text) || /^เป็ดรมควัน\\s+ขนาด(เล็ก|กลาง|ใหญ่)$/i.test(text)) {
+          el.textContent = "เป็ดรมควันอบชานอ้อย";
+          continue;
+        }
+        if (/^Whole.*Duck.*(Small|Medium|Large)$/i.test(text)) {
+          el.textContent = "Whole Sugarcane-Smoked Duck";
+          continue;
+        }
+        if (/^甘蔗烟熏整鸭.*(小|中|大)/.test(text)) {
+          el.textContent = "甘蔗烟熏整鸭";
+          continue;
+        }
+        if (sizeText.test(text)) {
+          el.style.setProperty("display", "none", "important");
+        }
+      }
+
+      card.dataset.emperorSingleWholeDuck = "790";
+    }
+  }
+
+  function patchSummaryRows() {
+    // Legacy summary menu can contain 790/890/990 in one block.
+    const all = leaves();
+    for (const price of [890, 990]) {
+      for (const el of all.filter((node) => exactPrice(node, price))) {
+        let row = el;
+        for (let i = 0; i < 5 && row.parentElement && row.parentElement !== document.body; i++) {
+          const parent = row.parentElement;
+          const t = clean(parent.textContent);
+          if (otherProductText.test(t)) break;
+          if (t.includes(String(price)) && t.length < 300) row = parent;
+          else break;
+        }
+        if (clean(row.textContent).includes(String(price)) && !clean(row.textContent).includes("790")) {
+          row.style.setProperty("display", "none", "important");
+        }
+      }
+    }
+  }
+
+  function patchKnownText() {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    for (const node of nodes) {
+      const parentText = clean(node.parentElement?.textContent);
+      let value = node.nodeValue || "";
+
+      if ((/ส่ง|delivery/i.test(parentText)) && /120\\s*บาท/.test(value)) {
+        value = value.replace(/120\\s*บาท/g, "200 บาท");
+      }
+      if ((/อกเป็ดรมควัน|Smoked Duck Breast/i.test(parentText)) && /599/.test(value)) {
+        value = value.replace(/599/g, "590");
+      }
+      if ((/ลิ้นหมู|Pig.?s Tongue/i.test(parentText)) && /499/.test(value)) {
+        value = value.replace(/499/g, "490");
+      }
+      node.nodeValue = value;
+    }
+  }
+
+  function patchAll() {
+    hideExtraDuckCards();
+    normalize790Card();
+    patchSummaryRows();
+    patchKnownText();
+  }
+
   let timer;
-  const run = () => { clearTimeout(timer); timer = setTimeout(patchWholeDuckPrices, 80); };
-  new MutationObserver(run).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
-  patchWholeDuckPrices();
-  setTimeout(patchWholeDuckPrices, 400);
-  setTimeout(patchWholeDuckPrices, 1200);
+  const schedule = () => {
+    clearTimeout(timer);
+    timer = setTimeout(patchAll, 100);
+  };
+
+  new MutationObserver(schedule).observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    characterData: true
+  });
+
+  patchAll();
+  setTimeout(patchAll, 400);
+  setTimeout(patchAll, 1200);
+  setTimeout(patchAll, 3000);
 })();
 <\/script>`;
 
