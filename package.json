@@ -14,7 +14,7 @@
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
-    "build:pages": "rm -rf cloudflare-dist && mkdir -p cloudflare-dist && cp cloudflare-pages/_worker.js cloudflare-dist/_worker.js"
+    "build:pages": "rm -rf cloudflare-dist && mkdir -p cloudflare-dist && cp cloudflare-pages/_worker.js cloudflare-dist/_worker.js && cp cloudflare-pages/_routes.json cloudflare-dist/_routes.json && mkdir -p cloudflare-dist/grandpa-seafood-bak-kut-teh && cp cloudflare-pages/grandpa-seafood-bak-kut-teh/index.html cloudflare-dist/grandpa-seafood-bak-kut-teh/index.html"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
