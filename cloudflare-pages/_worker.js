@@ -150,21 +150,17 @@ const STORE_PATCH = `<script>
     window.fetch = async (input, init = {}) => {
       const url = typeof input === "string" ? input : input?.url || "";
       const isOrder = /\\/api\\/orders(?:\\?|$)/.test(url) && String(init.method || "GET").toUpperCase() === "POST";
-      let submitted = null;
-      if (isOrder && typeof init.body === "string") {
-        try { submitted = JSON.parse(init.body); } catch {}
-      }
       const response = await originalFetch(input, init);
       if (!isOrder || !response.ok) return response;
       try {
         const result = await response.clone().json();
-        const amount = Number(submitted?.subtotal);
         const orderNo = result?.orderNo || result?.order_no;
-        if (orderNo && Number.isFinite(amount) && amount > 0) {
+        const publicToken = result?.publicToken || result?.public_token;
+        if (orderNo && publicToken) {
           const payResponse = await originalFetch("/api/hero-pay/session", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ order_id: orderNo, amount, description: "EMPEROR FOODS order " + orderNo })
+            body: JSON.stringify({ order_id: orderNo, public_token: publicToken, description: "EMPEROR FOODS order " + orderNo })
           });
           const payData = await payResponse.json().catch(() => null);
           if (payResponse.ok && payData?.checkout_url) {
@@ -263,11 +259,25 @@ async function createHeroPaySession(request, env, publicUrl) {
   }
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, code: "INVALID_JSON", message: "Request body must be JSON." }, 400); }
-  const amount = Number(body.amount);
   const orderId = String(body.order_id || body.orderId || "").trim().slice(0, 80);
-  if (!orderId || !Number.isFinite(amount) || amount <= 0 || amount > 150000) {
-    return json({ ok: false, code: "INVALID_PAYMENT_REQUEST", message: "A valid order reference and THB amount are required." }, 400);
+  const publicToken = String(body.public_token || body.publicToken || "").trim().slice(0, 100);
+  if (!orderId || !publicToken) {
+    return json({ ok: false, code: "INVALID_PAYMENT_REQUEST", message: "A valid order reference and order token are required." }, 400);
   }
+  let orderResponse;
+  try {
+    orderResponse = await fetch(APP_ORIGIN + "/api/orders/status?token=" + encodeURIComponent(publicToken), { headers: { "accept": "application/json" } });
+  } catch {
+    return json({ ok: false, code: "ORDER_STATUS_UNREACHABLE", message: "Could not verify the order amount." }, 502);
+  }
+  if (!orderResponse.ok) return json({ ok: false, code: "ORDER_NOT_VERIFIED", message: "The order could not be verified." }, 400);
+  const order = await orderResponse.json().catch(() => null);
+  if (!order || String(order.orderNo || "") !== orderId) return json({ ok: false, code: "ORDER_MISMATCH", message: "Order reference does not match." }, 400);
+  if (String(order.paymentStatus || "").toLowerCase() === "paid") return json({ ok: false, code: "ORDER_ALREADY_PAID", message: "This order is already paid." }, 409);
+  const subtotalSatang = Number(order.subtotalSatang);
+  if (!Number.isInteger(subtotalSatang) || subtotalSatang <= 0) return json({ ok: false, code: "ORDER_AMOUNT_INVALID", message: "Verified order amount is invalid." }, 400);
+  const amount = (subtotalSatang + 20000) / 100;
+  if (amount > 150000) return json({ ok: false, code: "ORDER_AMOUNT_TOO_HIGH", message: "Order amount exceeds checkout limit." }, 400);
   const origin = heroPayOrigin(env);
   const payload = {
     merchant: "EMPEROR-FOODS",
