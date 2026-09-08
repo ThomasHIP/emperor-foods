@@ -1,8 +1,7 @@
 // Cloudflare Pages customer shell for EMPEROR FOODS.
 const APP_ORIGIN = "https://emperor-foods.vatisp.chatgpt.site";
+const DEFAULT_HERO_PAY_ORIGIN = "https://hero-pay-website.pages.dev";
 
-// This script is injected into the same-origin /store/ proxy so we can safely
-// correct the legacy storefront without changing the original hosted site.
 const STORE_PATCH = `<script>
 (() => {
   const clean = (value) => (value || "").replace(/\\s+/g, " ").trim();
@@ -52,11 +51,9 @@ const STORE_PATCH = `<script>
     for (const priceEl of all.filter((el) => exactPrice(el, 790))) {
       const card = findWholeDuckCard(priceEl, 790);
       if (!card || card === document.body) continue;
-
       for (const el of leaves(card)) {
         const text = clean(el.textContent);
         if (!text) continue;
-
         if (/^เป็ดรมควัน(?:อบ)?ชานอ้อย.*ขนาด(เล็ก|กลาง|ใหญ่)$/i.test(text) || /^เป็ดรมควัน\\s+ขนาด(เล็ก|กลาง|ใหญ่)$/i.test(text)) {
           el.textContent = "เป็ดรมควันอบชานอ้อย";
           continue;
@@ -69,26 +66,22 @@ const STORE_PATCH = `<script>
           el.textContent = "甘蔗烟熏整鸭";
           continue;
         }
-        if (sizeText.test(text)) {
-          el.style.setProperty("display", "none", "important");
-        }
+        if (sizeText.test(text)) el.style.setProperty("display", "none", "important");
       }
-
       card.dataset.emperorSingleWholeDuck = "790";
     }
   }
 
   function patchSummaryRows() {
-    // Legacy summary menu can contain 790/890/990 in one block.
     const all = leaves();
     for (const price of [890, 990]) {
       for (const el of all.filter((node) => exactPrice(node, price))) {
         let row = el;
         for (let i = 0; i < 5 && row.parentElement && row.parentElement !== document.body; i++) {
           const parent = row.parentElement;
-          const t = clean(parent.textContent);
-          if (otherProductText.test(t)) break;
-          if (t.includes(String(price)) && t.length < 300) row = parent;
+          const text = clean(parent.textContent);
+          if (otherProductText.test(text)) break;
+          if (text.includes(String(price)) && text.length < 300) row = parent;
           else break;
         }
         if (clean(row.textContent).includes(String(price)) && !clean(row.textContent).includes("790")) {
@@ -102,22 +95,88 @@ const STORE_PATCH = `<script>
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-
     for (const node of nodes) {
       const parentText = clean(node.parentElement?.textContent);
       let value = node.nodeValue || "";
-
-      if ((/ส่ง|delivery/i.test(parentText)) && /120\\s*บาท/.test(value)) {
-        value = value.replace(/120\\s*บาท/g, "200 บาท");
-      }
-      if ((/อกเป็ดรมควัน|Smoked Duck Breast/i.test(parentText)) && /599/.test(value)) {
-        value = value.replace(/599/g, "590");
-      }
-      if ((/ลิ้นหมู|Pig.?s Tongue/i.test(parentText)) && /499/.test(value)) {
-        value = value.replace(/499/g, "490");
-      }
+      if ((/ส่ง|delivery/i.test(parentText)) && /120\\s*บาท/.test(value)) value = value.replace(/120\\s*บาท/g, "200 บาท");
+      if ((/อกเป็ดรมควัน|Smoked Duck Breast/i.test(parentText)) && /599/.test(value)) value = value.replace(/599/g, "590");
+      if ((/ลิ้นหมู|Pig.?s Tongue/i.test(parentText)) && /499/.test(value)) value = value.replace(/499/g, "490");
       node.nodeValue = value;
     }
+  }
+
+  function ensurePromptPayStyles() {
+    if (document.getElementById("emperor-promptpay-style")) return;
+    const style = document.createElement("style");
+    style.id = "emperor-promptpay-style";
+    style.textContent = ".emperor-promptpay-pay{display:block;width:100%;margin:16px 0 8px;padding:15px 18px;border-radius:14px;background:linear-gradient(135deg,#083d77,#0b6fb8);color:#fff!important;text-decoration:none!important;text-align:center;font-weight:800;box-shadow:0 8px 24px rgba(4,62,116,.22)}.emperor-promptpay-pay small{display:block;margin-top:4px;font-weight:600;opacity:.9}.emperor-promptpay-note{margin:8px 0 0;font-size:12px;line-height:1.45;color:#6a5b55}";
+    document.head.appendChild(style);
+  }
+
+  function forcePromptPayOnly() {
+    for (const select of document.querySelectorAll("select")) {
+      const option = select.querySelector('option[value="promptpay"]');
+      if (!option) continue;
+      select.value = "promptpay";
+      for (const child of [...select.options]) if (child.value !== "promptpay") child.disabled = true;
+    }
+  }
+
+  function injectPromptPayButton() {
+    ensurePromptPayStyles();
+    forcePromptPayOnly();
+    const payment = window.__emperorPromptPayCheckout;
+    if (!payment?.checkoutUrl) return;
+    const result = document.querySelector(".order-result") || [...document.querySelectorAll("section,div")].find((el) => clean(el.textContent).includes(payment.orderNo || "") && clean(el.textContent).length < 1800);
+    if (!result || result.querySelector("[data-emperor-promptpay]")) return;
+    const link = document.createElement("a");
+    link.dataset.emperorPromptpay = "true";
+    link.className = "emperor-promptpay-pay";
+    link.href = payment.checkoutUrl;
+    link.target = "_top";
+    link.rel = "noopener";
+    link.innerHTML = "ชำระด้วย PromptPay QR ผ่าน HERO PAY<small>Pay securely with PromptPay QR</small>";
+    const note = document.createElement("p");
+    note.className = "emperor-promptpay-note";
+    note.textContent = "ยอดชำระถูกล็อกจากคำสั่งซื้อ ระบบจะสร้าง Dynamic QR สำหรับรายการนี้โดยเฉพาะ";
+    result.appendChild(link);
+    result.appendChild(note);
+  }
+
+  function installOrderPaymentBridge() {
+    if (window.__emperorPaymentBridgeInstalled) return;
+    window.__emperorPaymentBridgeInstalled = true;
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async (input, init = {}) => {
+      const url = typeof input === "string" ? input : input?.url || "";
+      const isOrder = /\\/api\\/orders(?:\\?|$)/.test(url) && String(init.method || "GET").toUpperCase() === "POST";
+      let submitted = null;
+      if (isOrder && typeof init.body === "string") {
+        try { submitted = JSON.parse(init.body); } catch {}
+      }
+      const response = await originalFetch(input, init);
+      if (!isOrder || !response.ok) return response;
+      try {
+        const result = await response.clone().json();
+        const amount = Number(submitted?.subtotal);
+        const orderNo = result?.orderNo || result?.order_no;
+        if (orderNo && Number.isFinite(amount) && amount > 0) {
+          const payResponse = await originalFetch("/api/hero-pay/session", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ order_id: orderNo, amount, description: "EMPEROR FOODS order " + orderNo })
+          });
+          const payData = await payResponse.json().catch(() => null);
+          if (payResponse.ok && payData?.checkout_url) {
+            window.__emperorPromptPayCheckout = { orderNo, checkoutUrl: payData.checkout_url };
+            setTimeout(injectPromptPayButton, 0);
+            setTimeout(injectPromptPayButton, 250);
+            setTimeout(injectPromptPayButton, 900);
+          }
+        }
+      } catch {}
+      return response;
+    };
   }
 
   function patchAll() {
@@ -125,20 +184,14 @@ const STORE_PATCH = `<script>
     normalize790Card();
     patchSummaryRows();
     patchKnownText();
+    forcePromptPayOnly();
+    injectPromptPayButton();
   }
 
+  installOrderPaymentBridge();
   let timer;
-  const schedule = () => {
-    clearTimeout(timer);
-    timer = setTimeout(patchAll, 100);
-  };
-
-  new MutationObserver(schedule).observe(document.documentElement, {
-    subtree: true,
-    childList: true,
-    characterData: true
-  });
-
+  const schedule = () => { clearTimeout(timer); timer = setTimeout(patchAll, 100); };
+  new MutationObserver(schedule).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
   patchAll();
   setTimeout(patchAll, 400);
   setTimeout(patchAll, 1200);
@@ -162,7 +215,7 @@ const CUSTOMER_SHELL = `<!doctype html>
 .menu-backdrop{position:fixed;z-index:23;inset:0;background:rgba(18,3,8,.52);opacity:0;visibility:hidden;transition:.25s ease}.menu-backdrop.is-open{opacity:1;visibility:visible}
 .menu-drawer{position:fixed;z-index:24;top:0;right:0;width:min(92vw,430px);height:100dvh;background:#fffaf0;color:var(--ink);box-shadow:-22px 0 60px rgba(31,0,9,.3);transform:translateX(103%);transition:transform .32s cubic-bezier(.2,.8,.2,1);overflow:auto;padding:22px 20px calc(34px + env(safe-area-inset-bottom))}.menu-drawer.is-open{transform:none}
 .menu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding-bottom:14px;border-bottom:1px solid #eadcc5}.menu-head small{display:block;color:#8d6d4d;font-weight:700;letter-spacing:.08em;margin-bottom:4px}.menu-head h2{margin:0;color:var(--wine-deep);font:700 27px/1.05 Georgia,serif}.close-menu{border:1px solid #e2d3bb;background:#fff;color:var(--wine);border-radius:50%;width:38px;height:38px;font-size:22px;cursor:pointer}
-.delivery-card,.benefit-card{margin:14px 0;padding:14px 15px;border-radius:14px;line-height:1.5}.delivery-card{border:1px solid #dfbd66;background:linear-gradient(135deg,#fff3c9,#fff9e8);color:#5d3207}.benefit-card{border:1px solid #f0b3c1;background:linear-gradient(135deg,#fff0f5,#f3f7ff);color:#4d2130}.delivery-card b,.benefit-card b{font-size:20px;color:#851426}
+.delivery-card,.benefit-card,.payment-card{margin:14px 0;padding:14px 15px;border-radius:14px;line-height:1.5}.delivery-card{border:1px solid #dfbd66;background:linear-gradient(135deg,#fff3c9,#fff9e8);color:#5d3207}.benefit-card{border:1px solid #f0b3c1;background:linear-gradient(135deg,#fff0f5,#f3f7ff);color:#4d2130}.payment-card{border:1px solid #9ac7ed;background:linear-gradient(135deg,#eef8ff,#f7fbff);color:#123f66}.delivery-card b,.benefit-card b,.payment-card b{font-size:20px}.delivery-card b,.benefit-card b{color:#851426}.payment-card b{color:#075c9c}.payment-card small{display:block;margin-top:3px}
 .menu-list{display:grid;border-top:1px solid #eadcc5}.menu-row{display:grid;grid-template-columns:1fr auto;gap:14px;padding:13px 2px;border-bottom:1px solid #eadcc5}.menu-row b{font-size:15px}.menu-row small{display:block;margin-top:3px;color:#816f67;line-height:1.4}.menu-price{color:#8a1023;font:700 20px/1 Georgia,serif;white-space:nowrap}.menu-note{margin-top:16px;color:#76625b;font-size:12px;line-height:1.55}
 .intro{position:fixed;z-index:30;inset:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 44%,rgba(234,212,154,.28),transparent 30%),linear-gradient(145deg,#fffaf0 0%,#f8f0df 52%,#f2e5cc 100%);color:var(--wine);transition:opacity .85s ease,visibility .85s ease}.intro::after{content:"";position:absolute;left:-35%;top:0;width:28%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-18deg);animation:lightSweep 2.7s .35s cubic-bezier(.22,.7,.24,1) both}.intro.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
 .intro-lockup{position:relative;width:min(78vw,560px);display:grid;place-items:center;text-align:center}.crown{margin-bottom:18px;color:var(--gold);font:400 clamp(37px,8vw,61px)/1 Georgia,serif;opacity:0;transform:translateY(-18px) scale(.82);animation:crownIn .85s .15s cubic-bezier(.2,.8,.2,1.2) forwards}.word-emperor{margin:0;color:var(--wine-deep);font:400 clamp(33px,8.8vw,73px)/1 Georgia,serif;letter-spacing:.2em;text-indent:.2em;opacity:0;filter:blur(7px);transform:scale(.96);animation:wordIn 1s .58s ease forwards}.word-foods{margin:14px 0 0;color:var(--wine);font-weight:700;font-size:clamp(11px,2.8vw,17px);letter-spacing:.72em;text-indent:.72em;opacity:0;transform:translateY(9px);animation:foodsIn .75s 1.05s ease forwards}.rule{width:min(64vw,390px);height:1px;margin-top:28px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);animation:ruleIn .85s 1.18s ease forwards}.tagline{margin:17px 0 0;color:#816e5f;font-size:clamp(8px,2vw,11px);font-weight:600;letter-spacing:.22em;text-transform:uppercase;opacity:0;animation:foodsIn .7s 1.45s ease forwards}
@@ -179,6 +232,7 @@ const CUSTOMER_SHELL = `<!doctype html>
 <div class="menu-head"><div><small>EMPEROR DUCK · CURRENT MENU</small><h2>เมนูและราคาปัจจุบัน</h2></div><button id="close-menu" class="close-menu" type="button" aria-label="Close menu">×</button></div>
 <div class="delivery-card"><b>ค่าส่งแช่เย็น ทั่วไทย 200 บาท</b><br><small>Chilled delivery nationwide · flat rate 200 Baht</small></div>
 <div class="benefit-card"><b>รับ 200 เครดิต</b><br><small>Receive 200 Credits</small></div>
+<div class="payment-card"><b>PromptPay QR · HERO PAY</b><small>Dynamic QR ตามยอดคำสั่งซื้อ · Secure server-side checkout</small></div>
 <div class="menu-list">
 <div class="menu-row"><div><b>เป็ดรมควันอบชานอ้อย</b><small>Whole Sugarcane-Smoked Duck</small></div><div class="menu-price">฿790</div></div>
 <div class="menu-row"><div><b>อกเป็ดรมควัน</b><small>Smoked Duck Breast · 1 ชิ้น</small></div><div class="menu-price">฿169</div></div>
@@ -188,11 +242,67 @@ const CUSTOMER_SHELL = `<!doctype html>
 <div class="menu-row"><div><b>คอหมูรมควัน</b><small>Smoked Pork Neck</small></div><div class="menu-price">฿479</div></div>
 <div class="menu-row"><div><b>ลิ้นหมูรมควัน</b><small>Smoked Pig’s Tongue · ประมาณ 330 กรัม</small></div><div class="menu-price">฿490</div></div>
 <div class="menu-row"><div><b>ชุดสามกษัตริย์</b><small>อกเป็ดรมควัน 1 + หมูรมควัน 1 + สามชั้นรมควัน 1 · ประมาณ 500 กรัม</small></div><div class="menu-price">฿490</div></div>
-</div><p class="menu-note">ค่าส่งแช่เย็น ทั่วไทย 200 บาท · รับ 200 เครดิต</p></aside>
+</div><p class="menu-note">ค่าส่งแช่เย็น ทั่วไทย 200 บาท · รับ 200 เครดิต · ชำระผ่าน PromptPay QR โดย HERO PAY</p></aside>
 <section id="emperor-intro" class="intro" aria-label="EMPEROR FOODS introduction"><div class="intro-lockup"><div class="crown" aria-hidden="true">♛</div><h1 class="word-emperor">EMPEROR</h1><p class="word-foods">FOODS</p><div class="rule"></div><p class="tagline">Premium Asian Lifestyle</p></div></section>
 <a id="fallback" class="fallback" href="${APP_ORIGIN}/">Open EMPEROR FOODS</a>
 <script>(()=>{const frame=document.getElementById("emperor-app"),intro=document.getElementById("emperor-intro"),toggle=document.getElementById("menu-toggle"),drawer=document.getElementById("current-menu"),backdrop=document.getElementById("menu-backdrop"),close=document.getElementById("close-menu"),startedAt=performance.now(),reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches,minimumIntro=reduceMotion?450:2800;let revealed=false;const revealApp=()=>{if(revealed)return;revealed=true;frame.classList.add("is-ready");intro.classList.add("is-leaving");setTimeout(()=>intro.remove(),reduceMotion?350:950)};const setMenu=open=>{drawer.classList.toggle("is-open",open);backdrop.classList.toggle("is-open",open);drawer.setAttribute("aria-hidden",String(!open));backdrop.setAttribute("aria-hidden",String(!open));toggle.setAttribute("aria-expanded",String(open))};toggle.addEventListener("click",()=>setMenu(!drawer.classList.contains("is-open")));close.addEventListener("click",()=>setMenu(false));backdrop.addEventListener("click",()=>setMenu(false));document.addEventListener("keydown",e=>{if(e.key==="Escape")setMenu(false)});frame.addEventListener("load",()=>{const remaining=Math.max(0,minimumIntro-(performance.now()-startedAt));setTimeout(revealApp,remaining)},{once:true});setTimeout(revealApp,6000)})();</script>
 </body></html>`;
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+}
+
+function heroPayOrigin(env) {
+  const configured = String(env?.HERO_PAY_BASE_URL || DEFAULT_HERO_PAY_ORIGIN).trim();
+  try { return new URL(configured).origin; } catch { return DEFAULT_HERO_PAY_ORIGIN; }
+}
+
+async function createHeroPaySession(request, env, publicUrl) {
+  if (!env?.HERO_PAY_INTERNAL_API_KEY) {
+    return json({ ok: false, code: "HERO_PAY_MERCHANT_KEY_REQUIRED", message: "EMPEROR FOODS is wired to HERO PAY, but its server-side HERO PAY key has not been configured in Cloudflare yet." }, 503);
+  }
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, code: "INVALID_JSON", message: "Request body must be JSON." }, 400); }
+  const amount = Number(body.amount);
+  const orderId = String(body.order_id || body.orderId || "").trim().slice(0, 80);
+  if (!orderId || !Number.isFinite(amount) || amount <= 0 || amount > 150000) {
+    return json({ ok: false, code: "INVALID_PAYMENT_REQUEST", message: "A valid order reference and THB amount are required." }, 400);
+  }
+  const origin = heroPayOrigin(env);
+  const payload = {
+    merchant: "EMPEROR-FOODS",
+    order_id: orderId,
+    amount,
+    description: String(body.description || ("EMPEROR FOODS order " + orderId)).trim().slice(0, 180),
+    return_url: publicUrl.origin + "/?payment=return&order=" + encodeURIComponent(orderId),
+    expires_in: 900
+  };
+  let response;
+  try {
+    response = await fetch(origin + "/api/payments/session", {
+      method: "POST",
+      headers: { "authorization": "Bearer " + env.HERO_PAY_INTERNAL_API_KEY, "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch {
+    return json({ ok: false, code: "HERO_PAY_UNREACHABLE", message: "Could not reach HERO PAY." }, 502);
+  }
+  const text = await response.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = { ok: false, code: "HERO_PAY_INVALID_RESPONSE" }; }
+  return json(data, response.status);
+}
+
+async function heroPayHealth(env) {
+  const origin = heroPayOrigin(env);
+  const merchantBridgeConfigured = Boolean(env?.HERO_PAY_INTERNAL_API_KEY);
+  let provider = null;
+  try {
+    const response = await fetch(origin + "/api/payments/health", { headers: { "accept": "application/json" } });
+    provider = await response.json();
+  } catch {}
+  return json({ ok: true, service: "EMPEROR FOODS → HERO PAY PromptPay bridge", hero_pay_origin: origin, merchant_bridge_configured: merchantBridgeConfigured, provider });
+}
 
 function rewriteLocation(value, publicOrigin) {
   if (!value) return value;
@@ -207,9 +317,12 @@ function upstreamUrlFor(publicUrl) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const publicUrl = new URL(request.url);
     const acceptsHtml = (request.headers.get("accept") || "").includes("text/html");
+
+    if (publicUrl.pathname === "/api/hero-pay/health" && request.method === "GET") return heroPayHealth(env);
+    if (publicUrl.pathname === "/api/hero-pay/session" && request.method === "POST") return createHeroPaySession(request, env, publicUrl);
 
     if (request.method === "GET" && publicUrl.pathname === "/" && acceptsHtml) {
       return new Response(CUSTOMER_SHELL, {
@@ -237,7 +350,6 @@ export default {
     const responseHeaders = new Headers(upstreamResponse.headers);
     const location = responseHeaders.get("location");
     if (location) responseHeaders.set("location", rewriteLocation(location, publicUrl.origin));
-
     const contentType = responseHeaders.get("content-type") || "";
     if (request.method === "GET" && (publicUrl.pathname === "/store" || publicUrl.pathname.startsWith("/store/")) && contentType.includes("text/html")) {
       let html = await upstreamResponse.text();
@@ -250,10 +362,6 @@ export default {
       return new Response(html, { status: upstreamResponse.status, statusText: upstreamResponse.statusText, headers: responseHeaders });
     }
 
-    return new Response(upstreamResponse.body, {
-      status: upstreamResponse.status,
-      statusText: upstreamResponse.statusText,
-      headers: responseHeaders
-    });
+    return new Response(upstreamResponse.body, { status: upstreamResponse.status, statusText: upstreamResponse.statusText, headers: responseHeaders });
   }
 };
