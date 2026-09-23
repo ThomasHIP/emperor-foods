@@ -365,7 +365,9 @@ export default {
     const publicUrl = new URL(request.url);
     const acceptsHtml = (request.headers.get("accept") || "").includes("text/html");
 
-    if (request.method === "GET" && (publicUrl.pathname === "/rewards" || publicUrl.pathname === "/rewards/")) return new Response(REWARDS_PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });\n\n    if (publicUrl.pathname === "/api/hero-pay/health" && request.method === "GET") return heroPayHealth(env);
+    if (request.method === "GET" && (publicUrl.pathname === "/rewards" || publicUrl.pathname === "/rewards/")) return new Response(REWARDS_PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+
+    if (publicUrl.pathname === "/api/hero-pay/health" && request.method === "GET") return heroPayHealth(env);
     if (publicUrl.pathname === "/api/hero-pay/session" && request.method === "POST") return createHeroPaySession(request, env, publicUrl);
 
     if (request.method === "GET" && publicUrl.pathname === "/" && acceptsHtml) {
