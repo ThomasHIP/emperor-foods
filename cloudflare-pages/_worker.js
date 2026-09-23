@@ -228,7 +228,7 @@ const CUSTOMER_SHELL = `<!doctype html>
 <div class="menu-head"><div><small>EMPEROR DUCK · CURRENT MENU</small><h2>เมนูและราคาปัจจุบัน</h2></div><button id="close-menu" class="close-menu" type="button" aria-label="Close menu">×</button></div>
 <div class="delivery-card"><b>ค่าส่งแช่เย็น ทั่วไทย 200 บาท</b><br><small>Chilled delivery nationwide · flat rate 200 Baht</small></div>
 <div class="benefit-card"><b>รับ 200 เครดิต</b><br><small>Receive 200 Credits</small></div>
-<div class="payment-card"><b>PromptPay QR · HERO PAY</b><small>Dynamic QR ตามยอดคำสั่งซื้อ · Secure server-side checkout</small></div>
+<div class="payment-card"><b>PromptPay QR · HERO PAY</b><small>Dynamic QR ตามยอดคำสั่งซื้อ · Secure server-side checkout</small></div><a href="/rewards" target="_top" style="display:block;margin:14px 0;padding:14px 15px;border-radius:14px;background:linear-gradient(135deg,#5c0617,#8b1830);color:#fff8e9;text-decoration:none;text-align:center;font-weight:800">EMPEROR Rewards / รับ Points &amp; HERO Credits →</a>
 <div class="menu-list">
 <div class="menu-row"><div><b>เป็ดรมควันอบชานอ้อย</b><small>Whole Sugarcane-Smoked Duck</small></div><div class="menu-price">฿790</div></div>
 <div class="menu-row"><div><b>อกเป็ดรมควัน</b><small>Smoked Duck Breast · 1 ชิ้น</small></div><div class="menu-price">฿169</div></div>
@@ -243,6 +243,40 @@ const CUSTOMER_SHELL = `<!doctype html>
 <a id="fallback" class="fallback" href="${APP_ORIGIN}/">Open EMPEROR FOODS</a>
 <script>(()=>{const frame=document.getElementById("emperor-app"),intro=document.getElementById("emperor-intro"),toggle=document.getElementById("menu-toggle"),drawer=document.getElementById("current-menu"),backdrop=document.getElementById("menu-backdrop"),close=document.getElementById("close-menu"),startedAt=performance.now(),reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches,minimumIntro=reduceMotion?450:2800;let revealed=false;const revealApp=()=>{if(revealed)return;revealed=true;frame.classList.add("is-ready");intro.classList.add("is-leaving");setTimeout(()=>intro.remove(),reduceMotion?350:950)};const setMenu=open=>{drawer.classList.toggle("is-open",open);backdrop.classList.toggle("is-open",open);drawer.setAttribute("aria-hidden",String(!open));backdrop.setAttribute("aria-hidden",String(!open));toggle.setAttribute("aria-expanded",String(open))};toggle.addEventListener("click",()=>setMenu(!drawer.classList.contains("is-open")));close.addEventListener("click",()=>setMenu(false));backdrop.addEventListener("click",()=>setMenu(false));document.addEventListener("keydown",e=>{if(e.key==="Escape")setMenu(false)});frame.addEventListener("load",()=>{const remaining=Math.max(0,minimumIntro-(performance.now()-startedAt));setTimeout(revealApp,remaining)},{once:true});setTimeout(revealApp,6000)})();</script>
 </body></html>`;
+
+const REWARDS_PAGE = `<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EMPEROR Rewards | HERO Credits & Points</title>
+<meta name="description" content="EMPEROR Rewards — รับ HERO Credits และ Points จากการสั่งซื้อ Emperor Duck">
+<meta name="theme-color" content="#4a0915">
+<style>
+:root{--wine:#5a0b18;--wine2:#7a1326;--gold:#d5a83b;--cream:#fff7e8;--ink:#2d171c;--blue:#075da8}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#2d050d 0,#650c1c 42%,#f8ead2 42%,#fffaf1 100%);font-family:Arial,Helvetica,"Noto Sans Thai",sans-serif;color:var(--ink);min-height:100vh}
+.wrap{width:min(760px,100%);margin:auto;padding:18px 14px 40px}.top{display:flex;justify-content:space-between;align-items:center;color:#fff4dd;margin:4px 2px 18px}.brand{font:700 18px Georgia,serif;letter-spacing:.08em}.back{color:#f8dda0;text-decoration:none;font-size:14px}
+.hero{background:linear-gradient(145deg,#fff8e7,#fffdf8);border:1px solid #e5c779;border-radius:24px;padding:24px 20px;box-shadow:0 22px 55px rgba(29,0,8,.22);text-align:center}.duck{font-size:38px}.hero h1{margin:5px 0 2px;color:var(--wine);font:700 clamp(30px,8vw,48px)/1.05 Georgia,serif}.hero h2{margin:6px 0 18px;color:#7b5a31;font-size:16px;font-weight:700}
+.credit{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:18px 0}.credit div{padding:15px 8px;border-radius:18px}.credit .pay{background:#5f0a19;color:#fff}.credit .get{background:linear-gradient(135deg,#fff0a5,#e7bb42);color:#5b3300}.credit b{display:block;font-size:29px}.credit small{display:block;margin-top:3px;line-height:1.35}.arrow{font-size:27px;color:#9b6b18}
+.rule{background:#f8efe0;border-radius:18px;padding:17px;text-align:left;margin:16px 0}.rule h3{margin:0 0 8px;color:var(--wine)}.rule p{margin:5px 0;line-height:1.5}.formula{font-weight:800;color:#7d1326}
+.calc{margin-top:18px;background:#fff;border-radius:20px;padding:18px;text-align:left;border:1px solid #eadbc3}.calc label{display:block;font-weight:800;margin-bottom:8px}.amount{display:flex;gap:8px}.amount input{width:100%;font-size:22px;padding:13px;border:1px solid #d8c7af;border-radius:12px}.amount button{border:0;border-radius:12px;background:var(--wine);color:white;font-weight:800;padding:0 18px}.result{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.result div{border-radius:14px;padding:13px;text-align:center;background:#fff8e9;border:1px solid #ecd7aa}.result b{display:block;color:var(--wine);font-size:28px}.result .hero-credit{background:#eef6ff;border-color:#b6d8f3}.result .hero-credit b{color:var(--blue)}
+.redeem{margin-top:18px;border-radius:18px;padding:17px;background:linear-gradient(135deg,#eef7ff,#fff0f4);border:1px solid #bed9ee}.redeem b{color:var(--blue);font-size:20px}.redeem p{margin:7px 0 0;line-height:1.5}.cta{display:block;margin-top:16px;background:linear-gradient(135deg,#063f79,#0873bd);color:#fff;text-decoration:none;text-align:center;padding:15px;border-radius:14px;font-weight:800}.note{font-size:12px;color:#79665d;line-height:1.5;margin-top:12px}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><div class="brand">♛ EMPEROR FOODS</div><a class="back" href="/">กลับหน้าร้าน / Store</a></div>
+<section class="hero">
+<div class="duck">🦆</div><h1>EMPEROR Rewards</h1><h2>สั่ง Emperor Duck · รับ Points · ใช้สิทธิ์ในเครือ HERO</h2>
+<div class="credit"><div class="pay"><small>ค่าส่งแช่เย็นทั่วไทย</small><b>฿200</b></div><div class="arrow">→</div><div class="get"><small>รับ</small><b>200</b><small>HERO Credits</small></div></div>
+<div class="rule"><h3>Points จากยอดซื้อ</h3><p><span class="formula">ทุกยอดครบ 100 บาท = 1 Point</span></p><p>คิดเฉพาะจำนวนเต็มของหลักร้อย — เศษไม่ปัดขึ้น</p><p><strong>ตัวอย่าง ฿1,498 = 14 Points</strong></p></div>
+<div class="calc"><label for="purchase">ลองคำนวณยอดซื้อของคุณ</label><div class="amount"><input id="purchase" inputmode="decimal" placeholder="เช่น 1498" aria-label="Purchase amount"><button id="calc" type="button">คำนวณ</button></div><div class="result"><div><small>Purchase Points</small><b id="points">0</b></div><div class="hero-credit"><small>Delivery HERO Credits</small><b id="credits">200</b></div></div></div>
+<div class="redeem"><b>200 HERO Credits = ส่วนลดประกัน พ.ร.บ. 200 บาท</b><p>นำไปใช้กับ HERO Insure และสิทธิประโยชน์อื่นในเครือ HERO ที่ร่วมรายการ</p></div>
+<a class="cta" href="/store/">สั่ง Emperor Duck / Order Now</a>
+<p class="note">หน้านี้เป็นจุดหมายถาวรสำหรับ QR ของ EMPEROR Rewards. เครดิตและ Points จะยืนยันตามคำสั่งซื้อและเงื่อนไขรายการส่งเสริมการขาย.</p>
+</section></main>
+<script>
+(()=>{const i=document.getElementById("purchase"),p=document.getElementById("points"),b=document.getElementById("calc");const run=()=>{const n=Math.max(0,Number(String(i.value||"").replace(/,/g,""))||0);p.textContent=String(Math.floor(n/100));};b.addEventListener("click",run);i.addEventListener("input",run);})();
+<\/script></body></html>`;
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
@@ -331,7 +365,7 @@ export default {
     const publicUrl = new URL(request.url);
     const acceptsHtml = (request.headers.get("accept") || "").includes("text/html");
 
-    if (publicUrl.pathname === "/api/hero-pay/health" && request.method === "GET") return heroPayHealth(env);
+    if (request.method === "GET" && (publicUrl.pathname === "/rewards" || publicUrl.pathname === "/rewards/")) return new Response(REWARDS_PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });\n\n    if (publicUrl.pathname === "/api/hero-pay/health" && request.method === "GET") return heroPayHealth(env);
     if (publicUrl.pathname === "/api/hero-pay/session" && request.method === "POST") return createHeroPaySession(request, env, publicUrl);
 
     if (request.method === "GET" && publicUrl.pathname === "/" && acceptsHtml) {
