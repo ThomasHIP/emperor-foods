@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EMPEROR Rewards | HERO Credits & Points</title>
+<meta name="theme-color" content="#5a0b18">
+<style>
+:root{--wine:#5a0b18;--wine2:#7a1326;--gold:#d5a83b;--ink:#2d171c;--blue:#075da8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(160deg,#2d050d 0,#650c1c 40%,#f8ead2 40%,#fffaf1 100%);font-family:Arial,Helvetica,"Noto Sans Thai",sans-serif;color:var(--ink);padding:18px 14px 40px}.wrap{width:min(760px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;color:#fff4dd;margin:4px 2px 18px}.brand{font:700 18px Georgia,serif;letter-spacing:.08em}.top a{color:#f8dda0;text-decoration:none;font-size:14px}.hero{background:linear-gradient(145deg,#fff8e7,#fffdf8);border:1px solid #e5c779;border-radius:24px;padding:24px 20px;box-shadow:0 22px 55px rgba(29,0,8,.22);text-align:center}.hero h1{margin:5px 0 2px;color:var(--wine);font:700 clamp(30px,8vw,48px)/1.05 Georgia,serif}.hero h2{margin:6px 0 18px;color:#7b5a31;font-size:16px}.credit{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:18px 0}.credit div{padding:15px 8px;border-radius:18px}.pay{background:#5f0a19;color:#fff}.get{background:linear-gradient(135deg,#fff0a5,#e7bb42);color:#5b3300}.credit b{display:block;font-size:29px}.arrow{font-size:27px;color:#9b6b18}.rule,.calc,.redeem{border-radius:18px;padding:17px;margin:16px 0;text-align:left}.rule{background:#f8efe0}.calc{background:#fff;border:1px solid #eadbc3}.redeem{background:linear-gradient(135deg,#eef7ff,#fff0f4);border:1px solid #bed9ee}.rule h3{margin:0 0 8px;color:var(--wine)}.rule p,.redeem p{margin:5px 0;line-height:1.5}.formula{font-weight:800;color:#7d1326}.calc label{display:block;font-weight:800;margin-bottom:8px}.calc input{width:100%;font-size:22px;padding:13px;border:1px solid #d8c7af;border-radius:12px}.result{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.result div{border-radius:14px;padding:13px;text-align:center;background:#fff8e9;border:1px solid #ecd7aa}.result b{display:block;color:var(--wine);font-size:28px}.result .hc{background:#eef6ff;border-color:#b6d8f3}.result .hc b,.redeem b{color:var(--blue)}.redeem b{font-size:20px}.cta{display:block;margin-top:16px;background:linear-gradient(135deg,#063f79,#0873bd);color:#fff;text-decoration:none;text-align:center;padding:15px;border-radius:14px;font-weight:800}.note{font-size:12px;color:#79665d;line-height:1.5;margin-top:12px}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><div class="brand">♛ EMPEROR FOODS</div><a href="/">กลับหน้าร้าน / Store</a></div>
+<section class="hero">
+<div style="font-size:38px">🦆</div>
+<h1>EMPEROR Rewards</h1>
+<h2>สั่ง Emperor Duck · รับ Points · ใช้สิทธิ์ในเครือ HERO</h2>
+<div class="credit"><div class="pay"><small>ค่าส่งแช่เย็นทั่วไทย</small><b>฿200</b></div><div class="arrow">→</div><div class="get"><small>รับ</small><b>200</b><small>HERO Credits</small></div></div>
+<div class="rule"><h3>Points จากยอดซื้อ</h3><p><span class="formula">ทุกยอดครบ 100 บาท = 1 Point</span></p><p>คิดเฉพาะจำนวนเต็มของหลักร้อย — เศษไม่ปัดขึ้น</p><p><strong>ตัวอย่าง ฿1,498 = 14 Points</strong></p></div>
+<div class="calc"><label for="purchase">ลองคำนวณยอดซื้อของคุณ</label><input id="purchase" inputmode="decimal" value="1498" aria-label="Purchase amount"><div class="result"><div><small>Purchase Points</small><b id="points">14</b></div><div class="hc"><small>Delivery HERO Credits</small><b>200</b></div></div></div>
+<div class="redeem"><b>200 HERO Credits = ส่วนลดประกัน พ.ร.บ. 200 บาท</b><p>ใช้กับ HERO Insure และสิทธิประโยชน์อื่นในเครือ HERO ที่ร่วมรายการ</p></div>
+<a class="cta" href="/">สั่ง Emperor Duck / Order Now</a>
+<p class="note">QR ของ EMPEROR Rewards ใช้ URL นี้ถาวร. Points และ HERO Credits จะยืนยันตามคำสั่งซื้อและเงื่อนไขรายการส่งเสริมการขาย.</p>
+</section></main>
+<script>const i=document.getElementById('purchase'),p=document.getElementById('points');i.addEventListener('input',()=>{const n=Math.max(0,Number(String(i.value||'').replace(/,/g,''))||0);p.textContent=String(Math.floor(n/100));});</script>
+</body></html>
